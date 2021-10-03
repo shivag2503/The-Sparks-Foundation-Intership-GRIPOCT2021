@@ -1,0 +1,265 @@
+---
+title: "Data Science and Business Analytics Internship - The Sparks Foundation"
+author: "Shivam Agrawal"
+date: "03/10/2021"
+output: 
+  html_document:
+    theme: yeti
+    highlight: zenburn
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen = 999)
+```
+
+<br>
+
+# #GRIPOCT2021
+
+<br>
+
+# Introduction
+
+<font size = "4"> Hi my name is Shivam Agrawal. This is my first task. I am using **R Programming** and **RStudio** for this task.</font>
+
+<br>
+
+# TASK-1: Prediction using Supervised ML
+
+<font size = "4"> **Problem Statement: ** Predict the percentage of an student based on the number of study hours. <br>
+**Model used: ** Simple Linear Regression <br>
+**Dataset link: ** http://bit.ly/w-data <br>
+
+<br>
+
+## Importing libraries
+
+```{r message=FALSE}
+library(dplyr) #efficiently manipulating datasets in R
+library(ggplot2) #For visualization
+library(gensvm) #For splitting the data
+library(Metrics) #For evaluating the model
+```
+
+<br>
+
+## Reading data
+
+```{r}
+url <- "http://bit.ly/w-data"
+student_data <- read.csv(file = url)
+print("Data imported successfully!!")
+head(student_data, 10)
+```
+
+<br>
+
+```{r}
+#Data information
+glimpse(student_data)
+```
+
+<font size = "3"> Our data contains **25 rows and 2 columns** respectively. </font>
+
+<br>
+
+```{r}
+#Descriptive Statistics
+summary(student_data)
+```
+
+<br>
+
+## Missing values?
+
+```{r warning=FALSE}
+student_data %>%
+  select(everything()) %>%
+  summarise_all(funs(sum(is.na(.)))) %>%
+  t()
+```
+
+<font size = "3">**No** missing values in our data. </font>
+
+<br>
+
+## Visualization
+
+```{r}
+#Our custom theme
+mytheme <- theme(plot.background = element_rect(fill="#F5FFFA", color = "darkblue"),
+             plot.title = element_text(size=20, hjust = 0.5),
+             axis.title.x = element_text(size=18, color = "black"),
+              axis.title.y = element_text(size=18, color = "black"),
+             axis.text.x = element_text(size=15),
+             axis.text.y = element_text(size=15),
+            legend.text = element_text(size=15),
+            legend.title = element_text(size=15))
+```
+
+<font size = "3"> Let's plot the data to see if there is any relationship between the data or not </font>
+
+```{r}
+#Scatter Plot
+ggplot(data = student_data,
+       aes(x = Hours,
+           y = Scores)) +
+  geom_point(color = "blue", size = 2) + 
+  scale_x_continuous(breaks = seq(1,10,1)) +
+  scale_y_continuous(breaks = seq(10, 100, 10)) +
+  xlab("Hours Studied") +
+  ylab("Percentage Score") +
+  ggtitle("Hours vs Scores") +
+  mytheme
+```
+
+<font size = "3"> We can see from the above plot that, there is a **positive linear relationship** between Hours Studied and Percentage Score. </font>
+
+
+<font size = "3"> Let's see the distribution plot </font>
+
+```{r}
+#Hours
+ggplot(data = student_data,
+       aes(x = Hours)) +
+  geom_histogram(aes(y = ..density..),
+                 bins = 6,
+                 colour = "black",
+                 fill="light blue") +
+  geom_density(alpha = 0.2, 
+               fill = "#FF6666") +
+  scale_x_continuous(breaks = seq(1,10,1)) +
+  xlab("Hours Studied") +
+  ylab("Density") +
+  ggtitle("Distribution Plot for Hours Studied") +
+  mytheme
+```
+
+```{r}
+#Scores
+ggplot(data = student_data,
+       aes(x = Scores)) +
+  geom_histogram(aes(y = ..density..),
+                 bins = 6,
+                 colour = "black",
+                 fill="light blue") +
+  geom_density(alpha = 0.2, 
+               fill = "#FF6666") +
+  scale_x_continuous(breaks = seq(10,100,10)) +
+  xlab("Percentage Score") +
+  ylab("Density") +
+  ggtitle("Distribution Plot for Percentage Score") +
+  mytheme
+```
+
+<br>
+
+## Preparing the Data
+
+<font size = "3"> Now we are splitting data into training and testing sets
+
+```{r}
+split_data <- gensvm.train.test.split(x = student_data, train.size = 0.8, shuffle = T, random.state = 0)
+```
+
+```{r}
+train_set <- split_data$x.train
+test_set <- split_data$x.test
+```
+
+```{r}
+#View train and test sets
+train_set
+test_set
+```
+
+<br>
+
+## Training the Algorithm
+
+```{r}
+#Linear Regression Model
+model <- lm(Scores ~ Hours, data = train_set)
+```
+
+<font size = "3"> Let's see the summary of our linear regression model </font>
+
+```{r}
+summary(model)
+```
+
+<br>
+
+## Plotting the Regression line
+
+```{r}
+ggplot(data = student_data,
+       aes(x = Hours,
+           y = Scores)) +
+  geom_point(color = "dark green", size = 2) + 
+  geom_smooth(method = "lm", fill = NA) +
+  scale_x_continuous(breaks = seq(1,10,1)) +
+  scale_y_continuous(breaks = seq(10, 100, 10)) +
+  xlab("Hours Studied") +
+  ylab("Percentage Score") +
+  ggtitle("Hours vs Scores") +
+  mytheme
+```
+
+<br>
+
+## Making Predictions
+
+<font size = "3"> Let's make some predictions on test set </font>
+
+```{r}
+test_hours <- data.frame(Hours = test_set$Hours)
+predicted_scores <- predict(model, test_hours)
+```
+
+```{r}
+#Compare the actual and predicted scores
+df <- data.frame(Hours = test_hours, Actual_Scores = test_set$Scores, Predicted_Scores = predicted_scores)
+df
+```
+
+<br>
+
+## What will be the predicted score if a student studies for 9.25 hrs/day?
+
+```{r}
+hours <- 9.25
+new_data <- data.frame(Hours = hours)
+stud_pred <- predict(model, new_data)
+
+print(paste0("If a student studies for ", hours, " hrs/day", " then he will score (predicted): ",
+             stud_pred))
+```
+
+<br>
+
+## Evaluating the Model
+
+<font size = "3"> Let's evaluate the performance of the model. This step is particularly important to compare how well different algorithms perform on a particular dataset. We will use **Mean Absolute Error, Mean Squared Error and Root Mean Squared Error**. </font>
+
+```{r}
+print(paste0("Mean Absolute Error: ", mae(test_set$Scores, predicted_scores)))
+print(paste0("Mean Squared Error: ", mse(test_set$Scores, predicted_scores)))
+print(paste0("Root Mean Squared Error: ", rmse(test_set$Scores, predicted_scores)))
+```
+
+<br>
+
+## Accuracy of the Model
+
+```{r}
+summary_model <- summary(model)
+summary_model$r.squared
+```
+
+<br>
+
+## End of Task-1
+
+<br>
