@@ -1,0 +1,444 @@
+---
+title: "Data Science and Business Analytics Internship - The Sparks Foundation"
+author: "Shivam Agrawal"
+date: "06/10/2021"
+output: 
+  html_document:
+    theme: yeti
+    highlight: zenburn
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(scipen = 999)
+```
+
+<br>
+
+# #GRIPOCT2021
+
+<br>
+
+# Introduction
+
+<font size = "4"> Hi my name is Shivam Agrawal. This is my second task. I am using **R Programming** and **RStudio** for this task.</font>
+
+<br>
+
+# TASK-3: Exploratory Data Analysis - Retail
+
+<font size = "4"> **Problem Statement: ** As a business manager, try to find out the weak areas where you can work to make more profit. <br>
+**Dataset link: ** https://bit.ly/3i4rbWl <br>
+
+<br>
+
+## Importing libraries
+
+```{r message=FALSE, warning=F}
+library(dplyr) #efficiently manipulating datasets in R
+library(ggplot2) #For visualization
+library(plotly) #For interactive visualization
+library(DT) # 
+library(RColorBrewer)
+```
+
+<br>
+
+## Reading data
+
+```{r message=FALSE, warning=F}
+supermarket_data <- read.csv(file = "SampleSuperstore.csv", header = T, stringsAsFactors = F)
+datatable(head(supermarket_data, 10), options = list(
+                          scrollX = TRUE
+                      ))
+```
+
+<br>
+
+## Data Analysis
+
+### Structure of data
+
+```{r message=FALSE, warning=F}
+glimpse(supermarket_data)
+```
+
+### Missing Data?
+
+```{r message=FALSE, warning=F}
+supermarket_data %>%
+  select(everything()) %>%
+  summarise_all(funs(sum(is.na(.)))) %>%
+  t()
+```
+
+### Dropping column "Postal.Code"
+
+```{r message=FALSE, warning=F}
+supermarket_data <- supermarket_data %>%
+  select(-c(Postal.Code))
+```
+
+### Let's check summary statistics
+
+```{r message=FALSE, warning=F}
+supermarket_data %>%
+  select_if(is.numeric) %>%
+  summary()
+```
+
+## Visualization
+
+### Which Shipping Mode mostly preferred?
+
+```{r message=FALSE, warning=F}
+df <- supermarket_data %>%
+  group_by(Ship.Mode) %>%
+  summarise(count = n())  
+df$Ship.Mode <- factor(df$Ship.Mode, levels = unique(df$Ship.Mode)[order(df$count, decreasing = TRUE)])
+
+df %>%
+  plot_ly(x = ~Ship.Mode,
+          y = ~count,
+          type = "bar",
+          color = ~Ship.Mode,
+          hovertemplate = paste("<b>%{x}: %{y}</b><br><br><extra></extra>")) %>%
+  layout(title = "Shipping Mode VS Count",
+         xaxis = list(title = "Shipping Mode"),
+         yaxis = list(title= "Count"))
+```
+
+**Observations: ** Standard Class is the most preferred shipping mode.
+
+Does **Standard Class** has higher sales and profits as well ?
+
+```{r message=FALSE, warning=F}
+datatable(supermarket_data %>%
+  select(Ship.Mode, Sales, Profit) %>%
+  group_by(Ship.Mode) %>%
+  summarise(Sales = sum(Sales), Profit = sum(Profit)) %>%
+  arrange(desc(Sales), desc(Profit)))
+```
+
+<br>
+
+### Segment 
+
+```{r message=FALSE, warning=F}
+df <- supermarket_data %>%
+  group_by(Segment) %>%
+  summarise(count = n())  
+df$Segment <- factor(df$Segment, levels = unique(df$Segment)[order(df$count, decreasing = TRUE)])
+
+df %>%
+  plot_ly(x = ~Segment,
+          y = ~count,
+          type = "bar",
+          color = ~Segment,
+          hovertemplate = paste("<b>%{x}: %{y}</b><br><br><extra></extra>")) %>%
+  layout(xaxis = list(title = "Segment"),
+         yaxis = list(title= "Count"),
+         title = "Segments VS Count")
+```
+
+**Observations: ** Consumer Segment is overpowering.
+
+Does **Consumer Segment** has higher sales and profits as well ?
+
+```{r message=FALSE, warning=F}
+datatable(supermarket_data %>%
+  select(Segment, Sales, Profit) %>%
+  group_by(Segment) %>%
+  summarise(Sales = sum(Sales), Profit = sum(Profit)) %>%
+  arrange(desc(Sales), desc(Profit)))
+```
+
+<br>
+
+### Categories
+
+```{r message=FALSE, warning=F}
+df <- supermarket_data %>%
+  group_by(Category) %>%
+  summarise(count = n())  
+df$Category <- factor(df$Category, levels = unique(df$Category)[order(df$count, decreasing = TRUE)])
+
+df %>%
+  plot_ly(x = ~Category,
+          y = ~count,
+          type = "bar",
+          color = ~Category,
+          hovertemplate = paste("<b>%{x}: %{y}</b><br><br><extra></extra>")) %>%
+  layout(xaxis = list(title = "Category"),
+         yaxis = list(title= "Count"),
+         title = "Categories VS Count")
+```
+
+**Observations: ** Office Supplies are more preferred then other categories.
+
+Does **Office Supplies** has higher sales and profits as well ?
+
+```{r message=FALSE, warning=F}
+datatable(supermarket_data %>%
+  select(Category, Sales, Profit) %>%
+  group_by(Category) %>%
+  summarise(Sales = sum(Sales), Profit = sum(Profit)) %>%
+  arrange(desc(Sales)))
+```
+
+<br>
+
+### Sub-Categories
+
+```{r message=FALSE, warning=F}
+df <- supermarket_data %>%
+  group_by(Sub.Category) %>%
+  summarise(count = n())  
+df$Sub.Category <- factor(df$Sub.Category, 
+                          levels = unique(df$Sub.Category)[order(df$count, decreasing = TRUE)])
+
+df %>%
+  plot_ly(x = ~Sub.Category,
+          y = ~count,
+          type = "bar",
+          color = ~Sub.Category,
+          colors = c("darkgreen", "blue", "red"),
+          hovertemplate = paste("<b>%{x}: %{y}</b><br><br><extra></extra>")) %>%
+  layout(xaxis = list(title = "Sub Categories"),
+         yaxis = list(title= "Count"),
+         title = "Sub Categories VS Count")
+```
+
+**Observations: ** Binders are the most popular sub category.
+
+Does **Binders** has higher sales and profits as well ?
+
+```{r message=FALSE, warning=F}
+datatable(supermarket_data %>%
+  select(Sub.Category, Sales, Profit) %>%
+  group_by(Sub.Category) %>%
+  summarise(Sales = sum(Sales), Profit = sum(Profit)) %>%
+  arrange(desc(Sales)))
+```
+
+<br>
+
+### Top States
+
+```{r message=FALSE, warning=FALSE}
+df <- supermarket_data %>%
+  group_by(State) %>%
+  summarise(count = n()) %>%
+  top_n(10) 
+df$State <- factor(df$State, 
+                          levels = unique(df$State)[order(df$count, decreasing = TRUE)])
+
+
+df %>%
+  plot_ly(x = ~State,
+          y = ~count,
+          type = "bar",
+          color = ~State,
+          colors = c("darkgreen", "blue", "red"),
+          hovertemplate = paste("<b>%{x}: %{y}</b><br><br><extra></extra>")) %>%
+  layout(title = "Top 10 States with maximum Retail",
+         xaxis = list(title = "State"),
+         yaxis = list(title= "Count"))
+```
+
+**Observations: ** California is the state which has most retail 
+
+<br>
+
+### Top Cties
+
+```{r message=FALSE, warning=FALSE}
+df <- supermarket_data %>%
+  group_by(City) %>%
+  summarise(count = n()) %>%
+  top_n(10) 
+df$City <- factor(df$City, 
+                          levels = unique(df$City)[order(df$count, decreasing = TRUE)])
+
+
+df %>%
+  plot_ly(x = ~City,
+          y = ~count,
+          type = "bar",
+          color = ~City,
+          colors = c("darkgreen", "blue", "red"),
+          hovertemplate = paste("<b>%{x}: %{y}</b><br><br><extra></extra>")) %>%
+  layout(title = "Top 10 Cities with maximum Retail",
+         xaxis = list(title = "City"),
+         yaxis = list(title= "Count"))
+```
+
+**Observations: ** New York City is the city which has most retails
+
+<br>
+
+### Region wise Retail
+
+```{r message=FALSE, warning=F}
+df <- supermarket_data %>%
+  group_by(Region) %>%
+  summarise(count = n())
+
+df %>%
+  plot_ly(labels = ~Region,
+                 values = ~count,
+                 marker = list(colors = ~Region)) %>%
+         add_pie(hole = 0.2) %>%
+         layout(title = "Region wise Retai",
+                xaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels = F,
+                             showgrid = F),
+                yaxis = list(zeroline = F,
+                             showline = F,
+                             showticklabels=F,
+                             showgrid=F))
+```
+
+**Observations: ** From above plots its clear that West Region has most Retail then other Regions
+
+<br>
+
+### Discount Vs Profit for all Region
+
+```{r message=FALSE, warning=F}
+df <- supermarket_data %>%
+  select(Profit, Discount, Region) %>%
+  group_by(Discount, Region) %>%
+  summarise(profit = mean(Profit), .groups = 'drop')
+
+df %>%
+ plot_ly(x=~Discount) %>%
+         add_markers(y = ~profit,
+                     text = ~paste("Profit: ", profit),
+                     showlegend = F) %>%
+         add_lines(y = ~fitted(loess(profit ~ Discount)),
+                   name = ~Region,
+                   color = ~Region,
+                   showlegend = T,
+                   line = list(width=5))  %>% 
+  layout(title = "Discount VS Profit",
+         xaxis = list(title = "Discount",
+                      
+                      zeroline = FALSE),
+         yaxis = list(title = "Profit",
+                     
+                      zeroline = FALSE))
+```
+
+**Observations: ** From above plot we can see that for higher discounts profit is less in every Regions.
+
+<br>
+
+### Region wise Sales/Profit
+
+```{r message=FALSE, warning=F}
+df <- supermarket_data %>%
+  select(Region, Profit, Sales) %>%
+  group_by(Region) %>%
+  summarise(sales = sum(Sales), profit = sum(Profit), count = n())
+
+df$Region <- factor(df$Region, 
+                          levels = unique(df$Region)[order(df$count, decreasing = TRUE)])
+
+p1 <- df %>% 
+  plot_ly(x = ~Region, y = ~sales, name = "Sales", type = "bar")
+
+p1 <- p1 %>% add_trace(y = ~profit, name = "Profit") %>%
+  layout(title = "Region wise Sales/Profit",
+         yaxis = list(title = "Sales/Profit"),
+         xaxis = list(title = "Region"),
+         barmode = "group")
+p1
+```
+
+**Observations: **
+
+<br>
+
+### State by Sales/Profit
+
+```{r message=FALSE, warning=F}
+df <- supermarket_data %>%
+  select(State, Profit, Sales) %>%
+  group_by(State) %>%
+  summarise(sales = sum(Sales), profit = sum(Profit), count = n()) %>%
+  top_n(10)
+
+df$State <- factor(df$State, 
+                          levels = unique(df$State)[order(df$sales, decreasing = TRUE)])
+
+p1 <- df %>% 
+  plot_ly(x = ~State, y = ~sales, name = "Sales", type = "bar")
+
+p1 <- p1 %>% add_trace(y = ~profit, name = "Profit") %>%
+  layout(barmode = "group",
+         title = "State wise Sales/Profit",
+         yaxis = list(title = "Sales/Profit"),
+         xaxis = list(title = "State"))
+p1
+
+```
+
+**Observations: ** California and New York are the top two states in US for getting highest sales and profit
+
+<br>
+
+### City by Sales/Profit
+
+```{r message=FALSE, warning=F}
+df <- supermarket_data %>%
+  select(City, Profit, Sales) %>%
+  group_by(City) %>%
+  summarise(sales = sum(Sales), profit = sum(Profit), count = n()) %>%
+  top_n(10)
+
+df$City <- factor(df$City, 
+                          levels = unique(df$City)[order(df$sales, decreasing = TRUE)])
+
+p1 <- df %>% 
+  plot_ly(x = ~City, y = ~sales, name = "Sales", type = "bar")
+
+p1 <- p1 %>% add_trace(y = ~profit, name = "Profit") %>%
+  layout(barmode = "group",
+         title = "City wise Sales/Profit",
+         yaxis = list(title = "Sales/Profit"),
+         xaxis = list(title = "City"))
+p1
+```
+
+**Observations: ** NYC and Los Angeles are the top two Cities in US for getting highest sales and profit
+
+<br>
+
+### **Conclusion**
+
+From above we can conclude that: <br>
+
+1. **Standard Class** is the most preferred shipping mode and it has also contributed **highest** sales and profit. <br>
+2. **Consumer** is the most preferred segment and it has also contributed **highest** sales and profit. <br>
+3. **Office Supplies** are the most demanded category but it has contributed **lowest** sales and profit. <br>
+4. **Binders** are the most demanded sub category but it has not contributed much. Instead **Phones** has contributed **highest** sales and profit. <br>
+5. **California and New York** are the top most States in US in terms of retail and also contributed **highest** sales and profit. <br>
+6. **New York City and Los Angeles** are the top most cities in US in terms of retail and also contributed **highest** sales and profit. <br>
+7. **West** Region contributed **maximum** retails and also **highest** contributer in terms of sales and profit. <br><br>
+
+Also:<br>
+
+1. We have to work on **discounts** to increase the profit especially in **Central** region.
+2. To increase sales in **South** region we have to introduce new ways of sales and marketing.
+3. Many states like **Texas**, **Florida** etc. has negative profits. We have to investigate further why these state have negative profit.
+4. We have to work on **Corporate** segment as it has least profit then other two segments.
+5. **Office Supplies** has the highest retails but it has least sales and higher profit. We have to check the cause and need to work on it to improve the sales.
+6. To get more sales and profit in **NYC and Los Angeles** we can introduce different offers.
+
+<br>
+
+### End of Task-3
+
+<br>
