@@ -8,3 +8,10 @@
 **Model used:** Simple Linear Regression <br>
 **Language and IDE:** R Programming and  RStudio <br>
 **Dataset link:** http://bit.ly/w-data <br>
+
+
+### TASK - 3: Exploratory Data Analysis - Retail
+
+**Problem Statement:** As a business manager, try to find out the weak areas where you can work to make more profit. <br>
+**Language and IDE:** R Programming and  RStudio <br>
+**Dataset link:** https://bit.ly/3i4rbWl <br>
