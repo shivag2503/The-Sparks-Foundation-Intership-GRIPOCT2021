@@ -38,8 +38,7 @@ options(scipen = 999)
 library(dplyr) #efficiently manipulating datasets in R
 library(ggplot2) #For visualization
 library(plotly) #For interactive visualization
-library(DT) # 
-library(RColorBrewer)
+library(DT) #For tables
 ```
 
 <br>
